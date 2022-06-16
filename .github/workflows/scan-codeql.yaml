@@ -38,8 +38,21 @@ jobs:
           languages: ${{ matrix.language }}
           queries: +security-extended
 
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v2
+#      - name: Autobuild
+#        uses: github/codeql-action/autobuild@v2
+
+      - name: Build
+        run: |-
+          mkdir bin
+          dotnet publish Jellyfin.Server \
+            --configuration Release \
+            --self-contained true \
+            --runtime ${{ matrix.dotnet_runtime }} \
+            --output bin \
+            --nologo \
+            -p:DebugSymbols=false \
+            -p:DebugType=none \
+            -p:UseAppHost=true
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2

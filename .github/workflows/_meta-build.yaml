@@ -60,7 +60,7 @@ jobs:
         with:
           dotnet-version: "6.0.x"
 
-      - name: Assemble
+      - name: Build
         shell: bash
         run: |-
           mkdir bin

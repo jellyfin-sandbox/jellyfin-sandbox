@@ -1,0 +1,53 @@
+name: '🧪 Run Test Suite'
+
+on:
+  push:
+    branches:
+      - "master"
+      - "release-*"
+  pull_request_target:
+    branches:
+      - "master"
+      - "release-*"
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Tests
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-22.04
+          - windows-2022
+          - macos-12
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3.0.2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2.1.0
+        with:
+          dotnet-version: "6.0.x"
+
+      - name: Run tests
+        shell: bash
+        run: |-
+          dotnet test \
+            --configuration Release \
+            --collect:"XPlat Code Coverage" \
+            --results-directory TestResults/ \
+            --settings tests/coverletArgs.runsettings \
+            --verbosity minimal \
+            --nologo
+
+      - name: Publish test results
+        uses: dorny/test-reporter@v1.5.0
+        if: ${{ success() || failure() }}
+        with:
+          name: Jellyfin Tests (${{ matrix.os }})
+          path: TestResults/**/*.trx
+          reporter: dotnet-trx

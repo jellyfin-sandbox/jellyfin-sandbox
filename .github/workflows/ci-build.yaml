@@ -1,0 +1,16 @@
+name: ""
+
+on:
+  push:
+    branches:
+      - "master"
+      - "release-*"
+  pull_request_target:
+    branches:
+      - "master"
+      - "release-*"
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/_meta.yaml

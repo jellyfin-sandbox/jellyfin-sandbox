@@ -1,0 +1,81 @@
+on:
+  workflow_call:
+    inputs:
+      app_version:
+        type: string
+        required: false
+        default: "unstable"
+        description: "the version that should be set/used as tag for the container image"
+      publish_container:
+        type: boolean
+        required: false
+        default: false
+        description: "publish and scan the container image once its build"
+    secrets:
+      registry_ghcr_usr:
+        required: false
+      registry_ghcr_psw:
+        required: false
+      registry_quay_usr:
+        required: false
+      registry_quay_psw:
+        required: false
+      registry_dhub_usr:
+        required: false
+      registry_dhub_psw:
+        required: false
+
+jobs:
+  build_dotnet:
+    name: Build .Net
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-22.04
+          - windows-2022
+          - macos-12
+        include:
+          - os: ubuntu-22.04
+            dotnet_runtime: linux-x64
+          - os: ubuntu-22.04
+            dotnet_runtime: linux-musl-x64
+          - os: ubuntu-22.04
+            dotnet_runtime: linux-arm64
+          - os: ubuntu-22.04
+            dotnet_runtime: linux-arm
+          - os: windows-2022
+            dotnet_runtime: win-x64
+          - os: macos-12
+            dotnet_runtime: osx-x64
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3.0.2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2.1.0
+        with:
+          dotnet-version: "6.0.x"
+
+      - name: Assemble
+        shell: bash
+        run: |-
+          mkdir bin
+          dotnet publish Jellyfin.Server \
+            --configuration Release \
+            --self-contained true \
+            --runtime ${{ matrix.dotnet_runtime }} \
+            --output bin \
+            --nologo \
+            -p:DebugSymbols=false \
+            -p:DebugType=none \
+            -p:UseAppHost=true
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3.1.0
+        with:
+          name: server-build-${{ matrix.dotnet_runtime }}
+          path: bin

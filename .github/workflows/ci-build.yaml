@@ -1,4 +1,4 @@
-name: ""
+name: "🏗️ Build CI"
 
 on:
   push:
@@ -13,4 +13,4 @@ on:
 
 jobs:
   build:
-    uses: ./.github/workflows/_meta.yaml
+    uses: ./.github/workflows/_meta-build.yaml

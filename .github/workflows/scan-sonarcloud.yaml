@@ -1,0 +1,127 @@
+name: "🔬 SonarCloud"
+
+on:
+  push:
+    branches:
+      - "master"
+      - "release-*"
+  pull_request:
+    branches:
+      - "master"
+      - "release-*"
+    types:
+      - opened
+      - reopened
+      - synchronize
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  SONAR_SCANNER_VERSION: "5.6.0"
+  SONAR_ORGANIZATION: "jellyfin-sandbox"
+  SONAR_PROJECT_KEY: "jellyfin-sandbox_jellyfin"
+
+jobs:
+  sonarcloud:
+    name: SonarCloud
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3.0.2
+        with:
+          # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0
+
+      - name: Setup Java for SonarScanner
+        uses: actions/setup-java@v3.3.0
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2.1.0
+        with:
+          dotnet-version: "6.0.x"
+
+      - name: Cache SonarCloud workspace
+        uses: actions/cache@v3.0.4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar-cache
+
+      - name: Install SonarCloud scanner
+        run: dotnet tool update dotnet-sonarscanner --global --version ${{ env.SONAR_SCANNER_VERSION }}
+
+      - name: Set variables (branch)
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |-
+          BRANCH="${{ github.ref }}"
+          echo "VERSION=$(yq '.version' build.yaml)" >> $GITHUB_ENV
+          echo "BRANCH=${BRANCH#refs/heads/}" >> $GITHUB_ENV
+
+      - name: Set variables (PullRequest)
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |-
+          SRC_BRANCH="${{ github.head_ref }}"
+          TGT_BRANCH="${{ github.base_ref }}"
+          echo "VERSION=$(yq '.version' build.yaml)" >> $GITHUB_ENV
+          echo "PR_NR=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+          echo "SRC_BRANCH=${SRC_BRANCH#refs/heads/}" >> $GITHUB_ENV
+          echo "TGT_BRANCH=${TGT_BRANCH#refs/heads/}" >> $GITHUB_ENV
+
+      - name: Build and analyze (branch)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |-
+          dotnet sonarscanner begin \
+            -o:"${{ env.SONAR_ORGANIZATION }}" \
+            -k:"${{ env.SONAR_PROJECT_KEY }}" \
+            -v:"${{ env.VERSION }}" \
+            -d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
+            -d:sonar.host.url="https://sonarcloud.io" \
+            -d:sonar.cs.vstest.reportsPaths=TestResults/*.trx \
+            -d:sonar.cs.opencover.reportsPaths=TestResults/*/coverage.opencover.xml \
+            -d:sonar.coverage.exclusions="**Test*.cs" \
+            -d:sonar.branch.name="${{ env.BRANCH }}"
+
+          dotnet test \
+            --configuration Release \
+            --collect:"XPlat Code Coverage" \
+            --results-directory TestResults/ \
+            --settings tests/coverletArgs.runsettings \
+            --verbosity minimal \
+            --nologo
+
+          dotnet sonarscanner end -d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+
+      - name: Build and analyze (PullRequest)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |-
+          dotnet sonarscanner begin \
+            -o:"${{ env.SONAR_ORGANIZATION }}" \
+            -k:"${{ env.SONAR_PROJECT_KEY }}" \
+            -v:"${{ env.VERSION }}" \
+            -d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
+            -d:sonar.host.url="https://sonarcloud.io" \
+            -d:sonar.cs.vstest.reportsPaths=TestResults/*.trx \
+            -d:sonar.cs.opencover.reportsPaths=TestResults/*/coverage.opencover.xml \
+            -d:sonar.coverage.exclusions="**Test*.cs" \
+            -d:sonar.pullrequest.key="${{ env.PR_NR }}" \
+            -d:sonar.pullrequest.branch="${{ env.SRC_BRANCH }}" \
+            -d:sonar.pullrequest.base="${{ env.TGT_BRANCH }}"
+
+          dotnet test \
+            --configuration Release \
+            --collect:"XPlat Code Coverage" \
+            --results-directory TestResults/ \
+            --settings tests/coverletArgs.runsettings \
+            --verbosity minimal \
+            --nologo
+
+          dotnet sonarscanner end -d:sonar.login="${{ secrets.SONAR_TOKEN }}"

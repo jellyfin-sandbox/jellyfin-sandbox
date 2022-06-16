@@ -22,7 +22,7 @@ jobs:
         os:
           - ubuntu-22.04
           - windows-2022
-          - macos-11
+          - macos-11 #TODO: set to macos-12 later
 
     steps:
       - name: Checkout repository

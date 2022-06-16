@@ -47,7 +47,7 @@ jobs:
           dotnet publish Jellyfin.Server \
             --configuration Release \
             --self-contained true \
-            --runtime ${{ matrix.dotnet_runtime }} \
+            --runtime linux-x64 \
             --output bin \
             --nologo \
             -p:DebugSymbols=false \

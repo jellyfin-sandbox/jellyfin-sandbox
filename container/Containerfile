@@ -3,15 +3,23 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim AS builder
 COPY . /app
 WORKDIR /app
 
-RUN mkdir "bin" \
+RUN DOTNET_RUNTIME="" \
+    && dpkgArch="$(dpkg --print-architecture)" \
+    && case "${dpkgArch##*-}" in \
+        amd64) DOTNET_RUNTIME='linux-x64';; \
+        arm64) DOTNET_RUNTIME='linux-arm64';; \
+        armhf) DOTNET_RUNTIME='linux-arm';; \
+    esac \
+    && mkdir "bin" \
     && dotnet publish Jellyfin.Server \
-       --configuration Release \
-       --self-contained true \
-       --output bin \
-       --nologo \
-       -p:DebugSymbols=false \
-       -p:DebugType=none \
-       -p:UseAppHost=true
+        --configuration Release \
+        --self-contained true \
+        --runtime ${DOTNET_RUNTIME}\
+        --output bin \
+        --nologo \
+        -p:DebugSymbols=false \
+        -p:DebugType=none \
+        -p:UseAppHost=true
 
 
 FROM docker.io/debian:bullseye-20220527-slim
@@ -48,7 +56,7 @@ RUN ARCH="" \
         arm64) ARCH='arm64';; \
         armhf) ARCH='armhf';; \
     esac \
-    apt-get update -yqq \
+    && apt-get update -yqq \
     && apt-get install -yqq --no-install-recommends --no-install-suggests \
       ca-certificates \
       gnupg \

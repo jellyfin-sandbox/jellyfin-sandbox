@@ -31,8 +31,6 @@ jobs:
       dotnet_runtimes: '["osx-x64"]'
 
   call_container_build:
-    needs:
-      - call_linux_build
     uses: ./.github/workflows/_meta-container.yaml
     with:
       app_version: 10.8.0

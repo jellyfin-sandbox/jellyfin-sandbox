@@ -12,5 +12,20 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  call_linux_build:
     uses: ./.github/workflows/_meta-build.yaml
+    with:
+      actions_os: ubuntu-22.04
+      dotnet_runtimes: '["linux-x64", "linux-musl-x64", "linux-arm64", "linux-arm"]'
+
+  call_windows_build:
+    uses: ./.github/workflows/_meta-build.yaml
+    with:
+      actions_os: windows-2022
+      dotnet_runtimes: '["win-x64"]'
+
+  call_osx_build:
+    uses: ./.github/workflows/_meta-build.yaml
+    with:
+      actions_os: macos-11 #TODO: set to macos-12 later
+      dotnet_runtimes: '["osx-x64"]'

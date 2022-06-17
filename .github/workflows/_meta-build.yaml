@@ -1,51 +1,23 @@
 on:
   workflow_call:
     inputs:
-      app_version:
+      actions_os:
         type: string
-        required: false
-        default: "unstable"
-        description: "the version that should be set/used as tag for the container image"
-      publish_container:
-        type: boolean
-        required: false
-        default: false
-        description: "publish and scan the container image once its build"
-    secrets:
-      registry_ghcr_usr:
-        required: false
-      registry_ghcr_psw:
-        required: false
-      registry_quay_usr:
-        required: false
-      registry_quay_psw:
-        required: false
-      registry_dhub_usr:
-        required: false
-      registry_dhub_psw:
-        required: false
+        required: true
+        description: "The GHA runner Virtual Environment to use for the build"
+      dotnet_runtimes:
+        type: string
+        required: true
+        description: "Stringified JSON Array of dotnet runtimes to build against"
 
 jobs:
   build_dotnet:
-    name: Build .Net
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ inputs.actions_os }}
 
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: ubuntu-22.04
-            dotnet_runtime: linux-x64
-          - os: ubuntu-22.04
-            dotnet_runtime: linux-musl-x64
-          - os: ubuntu-22.04
-            dotnet_runtime: linux-arm64
-          - os: ubuntu-22.04
-            dotnet_runtime: linux-arm
-          - os: windows-2022
-            dotnet_runtime: win-x64
-          - os: macos-11 #TODO: set to macos-12 later
-            dotnet_runtime: osx-x64
+        dotnet_runtime: ${{ fromJson(inputs.dotnet_runtimes) }}
 
     steps:
       - name: Checkout repository
@@ -73,5 +45,5 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3.1.0
         with:
-          name: server-build-${{ matrix.dotnet_runtime }}
+          name: server-build_${{ matrix.dotnet_runtime }}
           path: bin

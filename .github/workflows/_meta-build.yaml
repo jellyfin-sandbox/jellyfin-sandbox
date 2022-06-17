@@ -11,7 +11,8 @@ on:
         description: "Stringified JSON Array of dotnet runtimes to build against"
 
 jobs:
-  build_dotnet:
+  build:
+    name: Build Jellyfin Server
     runs-on: ${{ inputs.actions_os }}
 
     strategy:
@@ -45,5 +46,6 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3.1.0
         with:
+          retention-days: 30
           name: server-build_${{ matrix.dotnet_runtime }}
           path: bin

@@ -1,0 +1,96 @@
+on:
+  workflow_call:
+    inputs:
+      app_version:
+        type: string
+        required: false
+        default: "unstable"
+        description: "the version that should be set/used as tag for the container image"
+      publish_container:
+        type: boolean
+        required: false
+        default: false
+        description: "publish and scan the container image once its build"
+    secrets:
+      registry_ghcr_usr:
+        required: false
+      registry_ghcr_psw:
+        required: false
+      registry_quay_usr:
+        required: false
+      registry_quay_psw:
+        required: false
+      registry_dhub_usr:
+        required: false
+      registry_dhub_psw:
+        required: false
+
+jobs:
+  build_container:
+    name: Build Jeyllfin Server Container
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3.0.2
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3.0.0
+        with:
+          path: container/bins
+
+      - name: Set Variables
+        uses: actions/github-script@v6.1.0
+        id: set_variables
+        with:
+          script: |-
+            const date = new Date()
+            core.setOutput('created', date.toISOString())
+
+      - id: container
+        name: Build Container Image
+        uses: redhat-actions/buildah-build@v2.10
+        with:
+          image: jellyfin-server
+          oci: true
+          tags: >-
+            sandbox
+            ${{ inputs.app_version }}
+          labels: |-
+            org.opencontainers.image.created=${{ steps.set_variables.outputs.created }}
+            org.opencontainers.image.version=${{ inputs.app_version }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          platforms: linux/amd64, linux/arm64/v8, linux/arm/v7
+          containerfiles: |-
+            container/Containerfile.ci
+
+      #TODO: scan container image (i.e. via grype or trivy)
+
+      - name: Push container image to ghcr.io
+        if: ${{ inputs.publish_container }}
+        uses: redhat-actions/push-to-registry@v2.6
+        with:
+          image: ${{ steps.container.outputs.image }}
+          tags: ${{ steps.container.outputs.tags }}
+          registry: ghcr.io/${{ github.repository_owner }}
+          username: ${{ github.registry_ghcr_usr }}
+          password: ${{ github.registry_ghcr_psw }}
+
+      - name: Push container image to quay.io
+        if: ${{ inputs.publish_container }}
+        uses: redhat-actions/push-to-registry@v2.6
+        with:
+          image: ${{ steps.container.outputs.image }}
+          tags: ${{ steps.container.outputs.tags }}
+          registry: quay.io/jellyfin
+          username: ${{ secrets.registry_quay_usr }}
+          password: ${{ secrets.registry_quay_psw }}
+
+      - name: Push container image to docker.io
+        if: "false"
+        uses: redhat-actions/push-to-registry@v2.6
+        with:
+          image: ${{ steps.container.outputs.image }}
+          tags: ${{ steps.container.outputs.tags }}
+          registry: docker.io/jellyfin
+          username: ${{ github.actor }}
+          password: ${{ github.token }}

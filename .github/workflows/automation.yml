@@ -1,11 +1,7 @@
 name: Automation
 
 on:
-  push:
-    branches:
-      - master
-  pull_request_target:
-  issue_comment:
+  workflow_dispatch:
 
 jobs:
   label:

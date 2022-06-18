@@ -76,8 +76,8 @@ jobs:
           image: ${{ steps.container.outputs.image }}
           tags: ${{ steps.container.outputs.tags }}
           registry: ghcr.io/${{ github.repository_owner }}
-          username: ${{ github.registry_ghcr_usr }}
-          password: ${{ github.registry_ghcr_psw }}
+          username: ${{ secrets.registry_ghcr_usr }}
+          password: ${{ secrets.registry_ghcr_psw }}
 
       - name: Push container image to quay.io
         if: "true" # ${{ inputs.publish_container }}

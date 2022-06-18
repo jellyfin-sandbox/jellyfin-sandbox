@@ -69,16 +69,10 @@ jobs:
           containerfiles: |-
             container/Containerfile.ci
 
-      - name: RE-Tag for Image Scan
-        run: |-
-          podman image ls | grep jellyfin-server
-          # podman tag jellyfin-server:sandbox local/jellyfin-server:sandbox
-
       - name: Run Trivy vulnerability scanner
-        if: "false" #TODO: enable
         uses: aquasecurity/trivy-action@0.4.1
         with:
-          image-ref: local/jellyfin-server:sandbox
+          image-ref: localhost/jellyfin-server:sandbox
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
@@ -86,7 +80,7 @@ jobs:
           severity: 'CRITICAL'
 
       - name: Push container image to ghcr.io
-        if: "true"
+        if: ${{ inputs.publish_container }}
         uses: redhat-actions/push-to-registry@v2.6
         with:
           image: ${{ steps.container.outputs.image }}
@@ -96,7 +90,7 @@ jobs:
           password: ${{ github.registry_ghcr_psw }}
 
       - name: Push container image to quay.io
-        if: ${{ inputs.publish_container }}
+        if: "true"
         uses: redhat-actions/push-to-registry@v2.6
         with:
           image: ${{ steps.container.outputs.image }}

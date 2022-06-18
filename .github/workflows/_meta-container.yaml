@@ -38,6 +38,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y qemu-user-static
 
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3.0.0
+        with:
+          path: container/bins
+
       - name: Set Variables
         uses: actions/github-script@v6.1.0
         id: set_variables
@@ -60,8 +65,9 @@ jobs:
             org.opencontainers.image.version=${{ inputs.app_version }}
             org.opencontainers.image.revision=${{ github.sha }}
           platforms: linux/amd64, linux/arm64/v8, linux/arm/v7
+          context: container
           containerfiles: |-
-            container/Containerfile
+            container/Containerfile.ci
 
       #TODO: scan container image (i.e. via grype or trivy)
 

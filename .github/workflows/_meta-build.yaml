@@ -42,10 +42,11 @@ jobs:
             -p:DebugSymbols=false \
             -p:DebugType=none \
             -p:UseAppHost=true
+          tar -cf server-build_${{ matrix.dotnet_runtime }}.tar bin
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3.1.0
         with:
           retention-days: 30
           name: server-build_${{ matrix.dotnet_runtime }}
-          path: bin
+          path: server-build_${{ matrix.dotnet_runtime }}.tar

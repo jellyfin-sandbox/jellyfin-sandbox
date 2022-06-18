@@ -70,7 +70,7 @@ jobs:
             container/Containerfile.ci
 
       - name: Push container image to ghcr.io
-        if: ${{ inputs.publish_container }}
+        if: "true" # ${{ inputs.publish_container }}
         uses: redhat-actions/push-to-registry@v2.6
         with:
           image: ${{ steps.container.outputs.image }}
@@ -80,7 +80,7 @@ jobs:
           password: ${{ github.registry_ghcr_psw }}
 
       - name: Push container image to quay.io
-        if: "true"
+        if: "true" # ${{ inputs.publish_container }}
         uses: redhat-actions/push-to-registry@v2.6
         with:
           image: ${{ steps.container.outputs.image }}
@@ -90,7 +90,7 @@ jobs:
           password: ${{ secrets.registry_quay_psw }}
 
       - name: Push container image to docker.io
-        if: "false"
+        if: "false" # ${{ inputs.publish_container }}
         uses: redhat-actions/push-to-registry@v2.6
         with:
           image: ${{ steps.container.outputs.image }}

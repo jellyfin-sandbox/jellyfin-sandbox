@@ -38,5 +38,7 @@ jobs:
       app_version: 10.8.0
       publish_container: false
     secrets:
+      registry_ghcr_usr: ${{ github.actor }}
+      registry_ghcr_psw: ${{ secrets.GITHUB_TOKEN }}
       registry_quay_usr: ${{ secrets.QUAY_USR }}
       registry_quay_psw: ${{ secrets.QUAY_TKN }}

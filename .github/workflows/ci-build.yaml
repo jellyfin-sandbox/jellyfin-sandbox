@@ -12,6 +12,18 @@ on:
   workflow_dispatch:
 
 jobs:
+  pre:
+    runs-on: ubuntu-22.04
+    outputs:
+      app_version: ${{ steps.read_build_yaml.outputs.app_version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3.0.2
+
+      - name: Read build.yaml
+        id: read_build_yaml
+        run: echo "::set-output name=app_version::unstable-$(yq '.version' build.yaml)"
+
   call_linux_build:
     uses: ./.github/workflows/_meta-build.yaml
     with:
@@ -32,11 +44,12 @@ jobs:
 
   call_container_build:
     needs:
+      - pre
       - call_linux_build
     uses: ./.github/workflows/_meta-container.yaml
     with:
-      app_version: 10.8.0
-      publish_container: false
+      app_version: ${{ needs.pre.outputs.app_version }}
+      publish_container: ${{ contains(github.repository_owner, 'jellyfin') && github.ref == 'refs/heads/master' }}
     secrets:
       registry_ghcr_usr: ${{ github.actor }}
       registry_ghcr_psw: ${{ secrets.GITHUB_TOKEN }}

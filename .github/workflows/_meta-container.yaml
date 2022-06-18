@@ -49,17 +49,23 @@ jobs:
         with:
           script: |-
             const date = new Date()
+            let tags = ""
+            if (context.event_name != 'release') {
+              tags = `unstable unstable-${context.sha.slice(0,7)} ${{ inputs.app_version }}`
+            }
+            else {
+              tags = `latest stable ${{ inputs.app_version }}`
+            }
             core.setOutput('created', date.toISOString())
+            core.setOutput('tags', tags)
 
       - id: container
         name: Build Container Image
         uses: redhat-actions/buildah-build@v2.10
         with:
           image: jellyfin-server
-          oci: true
-          tags: >-
-            sandbox
-            ${{ inputs.app_version }}
+          oci: false
+          tags: ${{ steps.set_variables.outputs.tags }}
           labels: |-
             org.opencontainers.image.created=${{ steps.set_variables.outputs.created }}
             org.opencontainers.image.version=${{ inputs.app_version }}
@@ -70,7 +76,7 @@ jobs:
             container/Containerfile.ci
 
       - name: Push container image to ghcr.io
-        if: "true" # ${{ inputs.publish_container }}
+        if: ${{ inputs.publish_container }}
         uses: redhat-actions/push-to-registry@v2.6
         with:
           image: ${{ steps.container.outputs.image }}
@@ -80,7 +86,7 @@ jobs:
           password: ${{ secrets.registry_ghcr_psw }}
 
       - name: Push container image to quay.io
-        if: "true" # ${{ inputs.publish_container }}
+        if: ${{ inputs.publish_container }}
         uses: redhat-actions/push-to-registry@v2.6
         with:
           image: ${{ steps.container.outputs.image }}

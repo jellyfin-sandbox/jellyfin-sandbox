@@ -70,9 +70,15 @@ jobs:
             container/Containerfile.ci
 
       #TODO: scan container image (i.e. via grype or trivy)
+      - name: Scan image
+        uses: anchore/scan-action@v3.2.5
+        with:
+          image: "jellyfin-server:sandbox"
+          fail-build: true
+          severity-cutoff: critical
 
       - name: Push container image to ghcr.io
-        if: ${{ inputs.publish_container }}
+        if: "true"
         uses: redhat-actions/push-to-registry@v2.6
         with:
           image: ${{ steps.container.outputs.image }}

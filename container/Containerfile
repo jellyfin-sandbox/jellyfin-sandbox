@@ -5,10 +5,10 @@ WORKDIR /app
 
 RUN DOTNET_RUNTIME="" \
     && dpkgArch="$(dpkg --print-architecture)" \
-    && case "${dpkgArch##*-}" in \
-        amd64) DOTNET_RUNTIME='linux-x64';; \
-        arm64) DOTNET_RUNTIME='linux-arm64';; \
-        armhf) DOTNET_RUNTIME='linux-arm';; \
+    && case "${dpkgArch}" in \
+        amd64*) DOTNET_RUNTIME='linux-x64';; \
+        arm64*) DOTNET_RUNTIME='linux-arm64';; \
+        armhf*) DOTNET_RUNTIME='linux-arm';; \
     esac \
     && mkdir "bin" \
     && dotnet publish Jellyfin.Server \
@@ -51,10 +51,10 @@ ARG LEVEL_ZERO_VERSION=1.3.23405
 RUN ARCH="" \
     && EXTRA_ARCH_PACKAGES="" \
     && dpkgArch="$(dpkg --print-architecture)" \
-    && case "${dpkgArch##*-}" in \
-        amd64) ARCH='amd64' && EXTRA_ARCH_PACKAGES="mesa-va-drivers";; \
-        arm64) ARCH='arm64';; \
-        armhf) ARCH='armhf';; \
+    && case "${dpkgArch}" in \
+        amd64*) ARCH='amd64' && EXTRA_ARCH_PACKAGES="mesa-va-drivers";; \
+        arm64*) ARCH='arm64';; \
+        armhf*) ARCH='armhf';; \
     esac \
     && apt-get update -yqq \
     && apt-get install -yqq --no-install-recommends --no-install-suggests \

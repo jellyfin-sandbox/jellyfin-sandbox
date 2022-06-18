@@ -2,7 +2,7 @@ FROM docker.io/debian:bullseye-20220527-slim as bin_selector
 
 COPY bins /tmp/bins
 WORKDIR /tmp/bins
-RUN mkdir -d /tmp/app \
+RUN mkdir -p /tmp/app \
     && dpkgArch="$(dpkg --print-architecture)" \
     && case "${dpkgArch##*-}" in \
         amd64) tar -xf server-build_linux-x64/server-build_linux-x64.tar -C /tmp/app;; \

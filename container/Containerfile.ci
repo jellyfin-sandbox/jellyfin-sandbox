@@ -6,8 +6,8 @@ RUN mkdir -p /tmp/app \
     && dpkgArch="$(dpkg --print-architecture)" \
     && case "${dpkgArch##*-}" in \
         amd64) tar -xf server-build_linux-x64/server-build_linux-x64.tar -C /tmp/app;; \
-        arm64) tar -xf server-build_linux-arm64/server-build_linux-arm64 -C /tmp/app;; \
-        armhf) tar -xf server-build_linux-arm/server-build_linux-arm -C /tmp/app;; \
+        arm64) tar -xf server-build_linux-arm64/server-build_linux-arm64.tar -C /tmp/app;; \
+        armhf) tar -xf server-build_linux-arm/server-build_linux-arm.tar -C /tmp/app;; \
     esac
 
 FROM docker.io/debian:bullseye-20220527-slim

@@ -2,12 +2,12 @@ FROM docker.io/debian:bullseye-20220527-slim as bin_selector
 
 COPY bins /tmp/bins
 WORKDIR /tmp/bins
-RUN mkdir /app \
+RUN mkdir -d /tmp/app \
     && dpkgArch="$(dpkg --print-architecture)" \
     && case "${dpkgArch##*-}" in \
-        amd64) tar -xf server-build_linux-x64/server-build_linux-x64.tar -C /app/bin;; \
-        arm64) tar -xf server-build_linux-arm64/server-build_linux-arm64 -C /app/bin;; \
-        armhf) tar -xf server-build_linux-arm/server-build_linux-arm -C /app/bin;; \
+        amd64) tar -xf server-build_linux-x64/server-build_linux-x64.tar -C /tmp/app;; \
+        arm64) tar -xf server-build_linux-arm64/server-build_linux-arm64 -C /tmp/app;; \
+        armhf) tar -xf server-build_linux-arm/server-build_linux-arm -C /tmp/app;; \
     esac
 
 FROM docker.io/debian:bullseye-20220527-slim
@@ -85,7 +85,7 @@ RUN ARCH="" \
     && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
     && locale-gen
 
-COPY --from=bin_selector /app/bin /opt/jellyfin
+COPY --from=bin_selector /tmp/app /opt/jellyfin
 
 EXPOSE 8096/tcp
 VOLUME [ "${JELLYFIN_MEDIA_DIR}", "${JELLYFIN_DATA_DIR}", "${JELLYFIN_CACHE_DIR}" ]

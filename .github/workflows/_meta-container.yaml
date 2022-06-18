@@ -69,13 +69,21 @@ jobs:
           containerfiles: |-
             container/Containerfile.ci
 
-      #TODO: scan container image (i.e. via grype or trivy)
-      - name: Scan image
-        uses: anchore/scan-action@v3.2.5
+      - name: RE-Tag for Image Scan
+        run: |-
+          podman image ls | grep jellyfin-server
+          # podman tag jellyfin-server:sandbox local/jellyfin-server:sandbox
+
+      - name: Run Trivy vulnerability scanner
+        if: "false" #TODO: enable
+        uses: aquasecurity/trivy-action@0.4.1
         with:
-          image: "jellyfin-server:sandbox"
-          fail-build: true
-          severity-cutoff: critical
+          image-ref: local/jellyfin-server:sandbox
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL'
 
       - name: Push container image to ghcr.io
         if: "true"

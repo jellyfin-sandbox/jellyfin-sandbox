@@ -69,16 +69,6 @@ jobs:
           containerfiles: |-
             container/Containerfile.ci
 
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.4.1
-        with:
-          image-ref: localhost/jellyfin-server:sandbox
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL'
-
       - name: Push container image to ghcr.io
         if: ${{ inputs.publish_container }}
         uses: redhat-actions/push-to-registry@v2.6

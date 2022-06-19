@@ -1,0 +1,22 @@
+name: "🏷️ Label Conflicting PRs"
+
+on:
+  push:
+    branches:
+      - "master"
+      - "release-*"
+  pull_request:
+    types:
+      - synchronize
+  workflow_dispatch:
+
+jobs:
+  merge_conflict_label:
+    runs-on: ubuntu-22.04
+    if: ${{ contains(github.repository_owner, 'jellyfin') }}
+    steps:
+      - name: Check and Label conflicting PRs
+        uses: eps1lon/actions-label-merge-conflict@v2.0.1
+        with:
+          dirtyLabel: 'merge conflict'
+          repoToken: ${{ secrets.GITHUB_TOKEN }}

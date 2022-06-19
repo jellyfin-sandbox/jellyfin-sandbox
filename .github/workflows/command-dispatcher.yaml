@@ -1,0 +1,31 @@
+# Allows for the definition of PR and Issue /commands
+name: '📟 Slash Command Dispatcher'
+
+on:
+  issue_comment:
+    types:
+      - created
+
+jobs:
+  launcher:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Command Dispatch
+        uses: peter-evans/slash-command-dispatch@v3.0.0
+        with:
+          token: ${{ secrets.JF_BOT_TOKEN }}
+          reaction-token: ${{ secrets.JF_BOT_TOKEN }}
+          #https://github.com/peter-evans/slash-command-dispatch/blob/main/docs/advanced-configuration.md
+          config: >-
+            [
+              {
+                "command": "rebase",
+                "permission": "write",
+                "issue_type": "pull-request"
+              },
+              {
+                "command": "check-backport",
+                "permission": "write",
+                "issue_type": "pull-request"
+              }
+            ]

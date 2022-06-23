@@ -5,10 +5,14 @@ on:
     branches:
       - "master"
       - "release-*"
+    paths-ignore:
+      - '**/*.md'
   pull_request_target:
     branches:
       - "master"
       - "release-*"
+    paths-ignore:
+      - '**/*.md'
   workflow_dispatch:
 
 jobs:

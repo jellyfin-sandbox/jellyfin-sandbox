@@ -2,8 +2,16 @@ name: OpenAPI
 on:
   push:
     branches:
-      - master
+      - "master"
+      - "release-*"
+    paths-ignore:
+      - '**/*.md'
   pull_request_target:
+    branches:
+      - "master"
+      - "release-*"
+    paths-ignore:
+      - '**/*.md'
 
 jobs:
   openapi-head:

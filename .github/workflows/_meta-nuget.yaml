@@ -46,6 +46,7 @@ jobs:
           mkdir bin
           dotnet pack ${{ matrix.nuget_project }} \
             --configuration Release \
+            --version-suffix unstable.${{ github.run_number }} \
             --include-source \
             --output bin \
             --nologo \
@@ -71,9 +72,6 @@ jobs:
         uses: actions/setup-dotnet@v2.1.0
         with:
           dotnet-version: "6.0.x"
-          source-url: "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
-        env:
-          NUGET_AUTH_TOKEN: '%NUGET_AUTH_TOKEN%'
 
       - name: Download Artifacts
         uses: actions/download-artifact@v3.0.0
@@ -81,6 +79,7 @@ jobs:
           path: bins
 
       - name: Publish NuGet packages (GitGub)
-        env:
-          NUGET_AUTH_TOKEN: "${{ secrets.gh_token }}"
-        run: dotnet nuget push bins/**/*.nupkg
+        run: |-
+          dotnet nuget push bins/**/*.nupkg \
+            --source https://nuget.pkg.github.com/${{ github.repository_owner }} \
+            --api-key ${{ github.token }}

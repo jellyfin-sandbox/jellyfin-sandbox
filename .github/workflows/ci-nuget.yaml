@@ -35,4 +35,4 @@ jobs:
         ]
       publish_nuget: ${{ contains(github.repository_owner, 'jellyfin') && github.ref == 'refs/heads/master' }}
     secrets:
-      gh_token: ${{ secrets.GITHUB_TOKEN }}
+      gh_token: ${{ secrets.TEST_PAT }}

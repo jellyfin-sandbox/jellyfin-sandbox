@@ -72,9 +72,6 @@ jobs:
         uses: actions/setup-dotnet@v2.1.0
         with:
           dotnet-version: "6.0.x"
-          source-url: "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
-        env:
-          NUGET_AUTH_TOKEN: ${{ secrets.gh_token }}
 
       - name: Download Artifacts
         uses: actions/download-artifact@v3.0.0
@@ -82,4 +79,7 @@ jobs:
           path: bins
 
       - name: Publish NuGet packages (GitGub)
-        run: dotnet nuget push bins/**/*.nupkg
+        run: |-
+          dotnet nuget push bins/**/*.nupkg \
+            --api-key "${{ secrets.gh_token }}" \
+            --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"

@@ -33,5 +33,6 @@ jobs:
           "Emby.Naming/Emby.Naming.csproj",
           "src/Jellyfin.Extensions/Jellyfin.Extensions.csproj"
         ]
+      publish_nuget: ${{ contains(github.repository_owner, 'jellyfin') && github.ref == 'refs/heads/master' }}
     secrets:
       gh_token: ${{ secrets.GITHUB_TOKEN }}

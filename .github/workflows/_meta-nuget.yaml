@@ -60,6 +60,8 @@ jobs:
           path: bin/
 
   publish_nuget:
+    needs:
+      - build_nuget
     runs-on: ubuntu-22.04
     if: ${{ inputs.publish_nuget }}
     steps:

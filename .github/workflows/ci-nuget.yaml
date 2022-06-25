@@ -1,4 +1,4 @@
-name: ""
+name: "📦 NuGet CI"
 
 on:
   push:
@@ -33,3 +33,5 @@ jobs:
           "Emby.Naming/Emby.Naming.csproj",
           "src/Jellyfin.Extensions/Jellyfin.Extensions.csproj"
         ]
+    secrets:
+      gh_token: ${{ secrets.GITHUB_TOKEN }}

@@ -9,10 +9,14 @@ on:
         type: boolean
         required: false
         default: false
-        description: "publish and scan the container image once its build"
+        description: "Set to publish the NuGet packages once they are built"
+    secrets:
+      gh_token:
+        required: false
+        description: "The Token used to publish the NuGet to the GitHub NuGet registry"
 
 jobs:
-  build_nugets:
+  build_nuget:
     runs-on: ubuntu-22.04
 
     strategy:
@@ -42,9 +46,8 @@ jobs:
           mkdir bin
           dotnet pack ${{ matrix.nuget_project }} \
             --configuration Release \
-            --include-symbols \
-            --include-source \
             --version-suffix unstable.${{ github.run_number }} \
+            --include-source \
             --output bin \
             --nologo \
             -p:Stability=Unstable
@@ -55,3 +58,25 @@ jobs:
           retention-days: 30
           name: ${{ steps.set_variables.outputs.projName }}_NuGet
           path: bin/
+
+  publish_nuget:
+    runs-on: ubuntu-22.04
+    if: ${{ inputs.publish_nuget }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3.0.2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2.1.0
+        with:
+          dotnet-version: "6.0.x"
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3.0.0
+        with:
+          path: bins
+
+      - name: Publish NuGet packages (GitGub)
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.gh_token }}
+        run: dotnet nuget push bin/*.nupkg --source "github"

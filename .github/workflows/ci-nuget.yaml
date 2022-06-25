@@ -1,0 +1,35 @@
+name: ""
+
+on:
+  push:
+    branches:
+      - "master"
+      - "release-*"
+    paths-ignore:
+      - '**/*.md'
+  pull_request:
+    branches:
+      - "master"
+      - "release-*"
+    paths:
+      - "Jellyfin.Data/*"
+      - "MediaBrowser.Common/*"
+      - "MediaBrowser.Controller/*"
+      - "MediaBrowser.Model/*"
+      - "Emby.Naming/*"
+      - "src/Jellyfin.Extensions/*"
+  workflow_dispatch:
+
+jobs:
+  call_nuget_build:
+    uses: ./.github/workflows/_meta-nuget.yaml
+    with:
+      nuget_projects: >-
+        [
+          "Jellyfin.Data/Jellyfin.Data.csproj",
+          "MediaBrowser.Common/MediaBrowser.Common.csproj",
+          "MediaBrowser.Controller/MediaBrowser.Controller.csproj",
+          "MediaBrowser.Model/MediaBrowser.Model.csproj",
+          "Emby.Naming/Emby.Naming.csproj",
+          "src/Jellyfin.Extensions/Jellyfin.Extensions.csproj"
+        ]

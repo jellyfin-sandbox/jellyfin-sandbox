@@ -1,0 +1,57 @@
+on:
+  workflow_call:
+    inputs:
+      nuget_projects:
+        type: string
+        required: true
+        description: "Stringified JSON Array of .csproj paths to run dotnet pack on"
+      publish_nuget:
+        type: boolean
+        required: false
+        default: false
+        description: "publish and scan the container image once its build"
+
+jobs:
+  build_nugets:
+    runs-on: ubuntu-22.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        nuget_project: ${{ fromJson(inputs.nuget_projects) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3.0.2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2.1.0
+        with:
+          dotnet-version: "6.0.x"
+
+      - name: Set Variables
+        uses: actions/github-script@v6.1.0
+        id: set_variables
+        with:
+          script: |-
+            const package = "${{ matrix.nuget_project }}".match(".*\/(?<projName>[a-zA-Z0-9.]+)\.csproj")?.groups
+            core.setOutput('projName', package?.projName)
+
+      - name: Build NuGet package
+        run: |-
+          mkdir bin
+          dotnet pack ${{ matrix.nuget_project }} \
+            --configuration Release \
+            --include-symbols \
+            --include-source \
+            --version-suffix unstable.${{ github.run_number }} \
+            --output bin \
+            --nologo \
+            -p:Stability=Unstable
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3.1.0
+        with:
+          retention-days: 30
+          name: ${{ steps.set_variables.outputs.projName }}_NuGet
+          path: bin/

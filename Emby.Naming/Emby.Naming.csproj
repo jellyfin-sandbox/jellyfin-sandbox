@@ -37,7 +37,7 @@
     <Authors>Jellyfin Contributors</Authors>
     <PackageId>Jellyfin.Naming</PackageId>
     <VersionPrefix>10.8.0</VersionPrefix>
-    <RepositoryUrl>https://github.com/jellyfin/jellyfin</RepositoryUrl>
+    <RepositoryUrl>https://github.com/jellyfin-sandbox/jellyfin-sandbox</RepositoryUrl>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
   </PropertyGroup>
 

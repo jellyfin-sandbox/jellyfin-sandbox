@@ -78,7 +78,14 @@ jobs:
         with:
           path: bins
 
+      - name: Add GitHub NuGet Registry
+        run: |-
+          dotnet nuget add source \
+            --name "github" \
+            --username USERNAME \
+            --password "${{ secrets.gh_token }}" \
+            --store-password-in-clear-text \
+            "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+
       - name: Publish NuGet packages (GitGub)
-        env:
-          NUGET_AUTH_TOKEN: ${{ secrets.gh_token }}
-        run: dotnet nuget push bin/*.nupkg --source "github"
+        run: dotnet nuget push bins/*.nupkg --source "github"

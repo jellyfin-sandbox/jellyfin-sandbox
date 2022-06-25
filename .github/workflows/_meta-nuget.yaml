@@ -46,7 +46,6 @@ jobs:
           mkdir bin
           dotnet pack ${{ matrix.nuget_project }} \
             --configuration Release \
-            --version-suffix unstable.${{ github.run_number }} \
             --include-source \
             --output bin \
             --nologo \
